@@ -1,0 +1,109 @@
+<!DOCTYPE html>
+<html lang="ru">
+
+<head>
+    <meta charset="UTF-8">
+    <!-- Обеспечивает корректное масштабирование на мобильных устройствах -->
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Игра "Найди круг"</title>
+    <style>
+        body {
+            margin: 0;
+            overflow: hidden;
+            background: #f0f0f0;
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            justify-content: center;
+            height: 100vh;
+        }
+
+        canvas {
+            border: 1px solid #000;
+            max-width: 100%;
+            height: auto;
+        }
+
+        h1,
+        p {
+            margin: 10px;
+        }
+    </style>
+</head>
+
+<body>
+    <h1>Найди круг!</h1>
+    <canvas id="gameCanvas" width="800" height="600"></canvas>
+    <p>Счёт: <span id="score">0</span></p>
+
+    <script>
+        const canvas = document.getElementById('gameCanvas');
+        const ctx = canvas.getContext('2d');
+        const scoreDisplay = document.getElementById('score');
+        let score = 0;
+        let circle = {};
+
+        // Функция для генерации случайного цвета
+        function getRandomColor() {
+            const letters = '0123456789ABCDEF';
+            let color = '#';
+            for (let i = 0; i < 6; i++) {
+                color += letters[Math.floor(Math.random() * 16)];
+            }
+            return color;
+        }
+
+        // Функция для создания нового круга с случайными координатами и цветом
+        function createCircle() {
+            const radius = 30;
+            const x = Math.random() * (canvas.width - 2 * radius) + radius;
+            const y = Math.random() * (canvas.height - 2 * radius) + radius;
+            circle = { x, y, radius, color: getRandomColor() };
+        }
+
+        // Функция для отрисовки круга на канвасе
+        function drawCircle() {
+            ctx.clearRect(0, 0, canvas.width, canvas.height);
+            ctx.beginPath();
+            ctx.arc(circle.x, circle.y, circle.radius, 0, Math.PI * 2);
+            ctx.fillStyle = circle.color;
+            ctx.fill();
+            ctx.closePath();
+        }
+
+        // Универсальная функция для обработки взаимодействия (клик или касание)
+        function handleInteraction(x, y) {
+            const distance = Math.sqrt((x - circle.x) ** 2 + (y - circle.y) ** 2);
+            if (distance <= circle.radius) {
+                score++;
+                scoreDisplay.textContent = score;
+                createCircle();
+                drawCircle();
+            }
+        }
+
+        // Обработчик клика мышью
+        canvas.addEventListener('click', function (e) {
+            const rect = canvas.getBoundingClientRect();
+            const clickX = e.clientX - rect.left;
+            const clickY = e.clientY - rect.top;
+            handleInteraction(clickX, clickY);
+        });
+
+        // Обработчик касания для мобильных устройств
+        canvas.addEventListener('touchstart', function (e) {
+            e.preventDefault(); // Предотвращает зумирование и другие стандартные действия
+            const rect = canvas.getBoundingClientRect();
+            const touch = e.touches[0]; // Используем первое касание
+            const touchX = touch.clientX - rect.left;
+            const touchY = touch.clientY - rect.top;
+            handleInteraction(touchX, touchY);
+        }, { passive: false });
+
+        // Инициализация игры
+        createCircle();
+        drawCircle();
+    </script>
+</body>
+
+</html>
